@@ -1,0 +1,23 @@
+version: "3.8"
+
+services:
+  postgres:
+    image: postgres:15
+    restart: always
+    volumes:
+      - db_data:/var/lib/postgresql/data
+    environment:
+      POSTGRES_PASSWORD: your_password
+    ports:
+      - 5432:5432
+
+  pgadmin:
+    image: dpage/pgadmin4
+    ports:
+      - "5050:80"
+    environment:
+      PGADMIN_DEFAULT_EMAIL: admin@admin.com
+      PGADMIN_DEFAULT_PASSWORD: your_password!
+
+volumes:
+  db_data:
