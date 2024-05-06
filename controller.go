@@ -2,6 +2,7 @@ package main
 
 import (
 	"encoding/json"
+	"fmt"
 	"net/http"
 )
 
@@ -31,6 +32,8 @@ func NewAPIController[T IEntity](server *Server, repository IRepository[T])*APIC
 
 func (c *APIController[T]) RegisterRoutes(){
 	c.server.RegisterRoute("GET /", makeHTTPFunc(c.handleGet))
+	c.server.RegisterRoute("GET /{id}", makeHTTPFunc(c.handleGetById))
+	c.server.RegisterRoute("POST /", makeHTTPFunc(c.handleInsert))
 }
 
 func makeHTTPFunc(f apiServerFunc) http.HandlerFunc{
@@ -50,7 +53,32 @@ func (s *APIController[T]) handleGet(w http.ResponseWriter, r *http.Request) err
 	return nil
 }
 
+func (s *APIController[T]) handleGetById(w http.ResponseWriter, r *http.Request) error {
+	id := r.PathValue("id")
+	fmt.Println("id", id)
+	e, err := s.repository.GetById(id) 
+	if err != nil {
+		return err
+	}
+	WriteJSON(w, http.StatusOK, e)
+	return nil
+}
+
 func (s *APIController[T]) handleInsert(w http.ResponseWriter, r *http.Request) error {
+	var e T
+	
+	if err := json.NewDecoder(r.Body).Decode(&e); err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+	}
+	defer r.Body.Close()
+	 
+	res, err := s.repository.Create(&e)
+	if err != nil {
+		return err
+	}
+	
+	WriteJSON(w, http.StatusOK, res)
+
 	return nil
 }
 

@@ -10,7 +10,7 @@ type ProfileService struct {
 
 func  newProfileMapper(scan func(dest ...any) error) (*Profile, error) {
 	var p Profile
-    err := scan(&p.Id, &p.Email, &p.Password)
+    err := scan(&p.Id, &p.Email, &p.Password, &p.TestInt)
     if err != nil {
         return nil, err
     }
