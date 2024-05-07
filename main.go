@@ -12,7 +12,3 @@ func main() {
 	controller.RegisterRoutes()
 	server.Run()
 }
-
-//dbservice which interacts with db
-
-//controller which recieves requests and then talks to dbservice

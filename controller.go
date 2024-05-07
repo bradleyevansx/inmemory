@@ -34,6 +34,7 @@ func (c *APIController[T]) RegisterRoutes(){
 	c.server.RegisterRoute("GET /", makeHTTPFunc(c.handleGet))
 	c.server.RegisterRoute("GET /{id}", makeHTTPFunc(c.handleGetById))
 	c.server.RegisterRoute("POST /", makeHTTPFunc(c.handleInsert))
+	c.server.RegisterRoute("DELETE /{id}", makeHTTPFunc(c.handleDelete))
 }
 
 func makeHTTPFunc(f apiServerFunc) http.HandlerFunc{
@@ -44,7 +45,7 @@ func makeHTTPFunc(f apiServerFunc) http.HandlerFunc{
 	}
 }
 
-func (s *APIController[T]) handleGet(w http.ResponseWriter, r *http.Request) error {
+func (s *APIController[T]) handleGet(w http.ResponseWriter, _ *http.Request) error {
 	e, err := s.repository.Get() 
 	if err != nil {
 		return err
@@ -55,7 +56,6 @@ func (s *APIController[T]) handleGet(w http.ResponseWriter, r *http.Request) err
 
 func (s *APIController[T]) handleGetById(w http.ResponseWriter, r *http.Request) error {
 	id := r.PathValue("id")
-	fmt.Println("id", id)
 	e, err := s.repository.GetById(id) 
 	if err != nil {
 		return err
@@ -68,7 +68,7 @@ func (s *APIController[T]) handleInsert(w http.ResponseWriter, r *http.Request) 
 	var e T
 	
 	if err := json.NewDecoder(r.Body).Decode(&e); err != nil {
-		http.Error(w, err.Error(), http.StatusBadRequest)
+		return fmt.Errorf("handleInsert: error decoding request body - %w", err)
 	}
 	defer r.Body.Close()
 	 
@@ -87,5 +87,14 @@ func (s *APIController[T]) handleUpdate(w http.ResponseWriter, r *http.Request) 
 }
 
 func (s *APIController[T]) handleDelete(w http.ResponseWriter, r *http.Request) error {
+	id := r.PathValue("id")
+	err := s.repository.Delete(id)
+	if err != nil {
+		return err
+	}
+
+	res := map[string]string{"message": "Entity deleted successfully"}
+
+	WriteJSON(w, http.StatusOK, res)
 	return nil
 }
