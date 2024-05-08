@@ -35,6 +35,7 @@ func (c *APIController[T]) RegisterRoutes(){
 	c.server.RegisterRoute("GET /{id}", makeHTTPFunc(c.handleGetById))
 	c.server.RegisterRoute("POST /", makeHTTPFunc(c.handleInsert))
 	c.server.RegisterRoute("DELETE /{id}", makeHTTPFunc(c.handleDelete))
+	c.server.RegisterRoute("PUT /", makeHTTPFunc(c.handlePut))
 }
 
 func makeHTTPFunc(f apiServerFunc) http.HandlerFunc{
@@ -68,8 +69,9 @@ func (s *APIController[T]) handleInsert(w http.ResponseWriter, r *http.Request) 
 	var e T
 	
 	if err := json.NewDecoder(r.Body).Decode(&e); err != nil {
-		return fmt.Errorf("handleInsert: error decoding request body - %w", err)
+		return err
 	}
+	fmt.Printf("%+v/n", e)
 	defer r.Body.Close()
 	 
 	res, err := s.repository.Create(&e)
@@ -82,7 +84,23 @@ func (s *APIController[T]) handleInsert(w http.ResponseWriter, r *http.Request) 
 	return nil
 }
 
-func (s *APIController[T]) handleUpdate(w http.ResponseWriter, r *http.Request) error {
+func (s *APIController[T]) handlePut(w http.ResponseWriter, r *http.Request) error {
+	var e T
+
+	if err := json.NewDecoder(r.Body).Decode(&e); err != nil {
+		return err
+	}
+	fmt.Printf("%+v/n", e)
+	defer r.Body.Close()
+
+
+	res, err := s.repository.Update(&e)
+	if err != nil {
+		return err
+	}
+	
+	WriteJSON(w, http.StatusOK, res)
+
 	return nil
 }
 

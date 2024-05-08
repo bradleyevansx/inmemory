@@ -16,7 +16,7 @@ type Profile struct {
     Entity
     Email    string `json:"email"`
     Password string `json:"password"`
-    TestInt  *int `json:"test_int"`
+    TestInt  int `json:"test_int"`
 }
 
 func (p Entity) GetId() uuid.UUID{

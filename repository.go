@@ -12,6 +12,7 @@ type IRepository[T IEntity] interface {
 	GetById(id string)(*T, error)
 	Create(e *T)(*T, error)
 	Delete(id string)(error)
+	Update(e *T)(*T, error)
 }
 
 type BaseRepository[T IEntity] struct {
@@ -99,7 +100,30 @@ func (r *BaseRepository[T]) Delete(id string) error {
 	return nil
 }
 
+func (r *BaseRepository[T]) Update(e *T) (*T, error) {
+    destructuredEntity, err := destructureEntity(e)
+	if err != nil {
+		return nil, fmt.Errorf("error destructuring entity: %v", err)
+	}
+	var setters []string
+	for i := 0; i < len(destructuredEntity.fieldNames); i++ {
+		if destructuredEntity.fieldNames[i] == "Entity" {
+			continue
+		};
+		setters = append(setters, fmt.Sprintf("%s = %s", destructuredEntity.fieldNames[i], destructuredEntity.fieldValues[i]))
+	}
+	query := fmt.Sprintf("UPDATE %s SET %s WHERE id = %s RETURNING *;", r.tableName, strings.Join(setters, ", "), destructuredEntity.id)
+	fmt.Println(query)
+	row := r.db.QueryRow(query)
+	res, err := r.rowMapper(row.Scan)
+    if err != nil {
+        return nil,fmt.Errorf("error iterating over row: %w", err)
+    }
+    return res, nil
+}
+
 type DestructuredEntity struct {
+	id string
 	fieldNames []string
 	fieldValues []string
 }
@@ -111,7 +135,7 @@ func destructureEntity[T IEntity](e *T)(*DestructuredEntity, error){
     }
 	var fieldNames []string
     var fieldValues []string
-
+	id := ""
     for i := 0; i < value.Elem().NumField(); i++ {
         fieldValue := value.Elem().Field(i)
         if !fieldValue.IsValid() {
@@ -129,6 +153,10 @@ func destructureEntity[T IEntity](e *T)(*DestructuredEntity, error){
         }
 
         jsonTagName := field.Tag.Get("json")
+			
+		if field.Name == "Entity" {
+			id = fmt.Sprintf("%v", fieldValue.Interface())
+		}
         if jsonTagName != "" {
             fieldNames = append(fieldNames, jsonTagName)
         } else {
@@ -137,6 +165,7 @@ func destructureEntity[T IEntity](e *T)(*DestructuredEntity, error){
         fieldValues = append(fieldValues, fmt.Sprintf("'%v'", fieldValue.Interface()))
     }
 	return &DestructuredEntity{
+		id: fmt.Sprintf("'%s'", strings.Trim(id, "{}")),
 		fieldNames: fieldNames,
 		fieldValues: fieldValues,
 	}, nil
