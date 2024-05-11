@@ -1,14 +1,17 @@
-package main
+package app
 
 import (
 	"encoding/json"
 	"fmt"
 	"net/http"
+
+	"github.com/bradleyevansx/inmemory/bus"
+	"github.com/bradleyevansx/inmemory/stor"
 )
 
-type APIController[T IEntity] struct{
+type APIController[T stor.IEntity] struct{
 	server *Server
-	repository IRepository[T]
+	repository bus.IService[T]
 }
 
 type apiServerFunc func (w http.ResponseWriter, r *http.Request) error 
@@ -26,7 +29,7 @@ func WriteJSON(w http.ResponseWriter, status int, v interface{}) error {
 	return nil
 }
 
-func NewAPIController[T IEntity](server *Server, repository IRepository[T])*APIController[T]{
+func NewAPIController[T stor.IEntity](server *Server, repository bus.IService[T])*APIController[T]{
 	return &APIController[T]{server: server, repository: repository}
 }
 

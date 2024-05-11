@@ -1,4 +1,4 @@
-package main
+package stor
 
 import (
 	"github.com/google/uuid"
