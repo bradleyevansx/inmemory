@@ -21,7 +21,7 @@ type BaseService[T stor.IEntity] struct {
 	rowMapper func(scan func(dest ...any) error) (*T, error)
 }
 
-func NewRepository[T stor.IEntity](repo *stor.Repository, tableName string, rowMapper  func(scan func(dest ...any) error) (*T, error)) *BaseService[T] {
+func NewBaseService[T stor.IEntity](repo *stor.Repository, tableName string, rowMapper  func(scan func(dest ...any) error) (*T, error)) *BaseService[T] {
 	return &BaseService[T]{repo: repo, tableName: tableName, rowMapper: rowMapper}
 }
 

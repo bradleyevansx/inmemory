@@ -2,7 +2,6 @@ package app
 
 import (
 	"encoding/json"
-	"fmt"
 	"net/http"
 
 	"github.com/bradleyevansx/inmemory/bus"
@@ -74,7 +73,6 @@ func (s *APIController[T]) handleInsert(w http.ResponseWriter, r *http.Request) 
 	if err := json.NewDecoder(r.Body).Decode(&e); err != nil {
 		return err
 	}
-	fmt.Printf("%+v/n", e)
 	defer r.Body.Close()
 	 
 	res, err := s.repository.Create(&e)
@@ -93,7 +91,6 @@ func (s *APIController[T]) handlePut(w http.ResponseWriter, r *http.Request) err
 	if err := json.NewDecoder(r.Body).Decode(&e); err != nil {
 		return err
 	}
-	fmt.Printf("%+v/n", e)
 	defer r.Body.Close()
 
 
